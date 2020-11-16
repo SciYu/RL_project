@@ -85,6 +85,3 @@ You can watch the result of an experiment with tensorboard.
 $ tensorboard --logdir ./log
 ```
 
-## Contact
-
-If you have problem running codes, please contact to Kei Ota (dev.ohtakei [at] gmail.com)
