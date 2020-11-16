@@ -1,4 +1,4 @@
-# OFENet
+# OFENet Model (source: http://www.merl.com/research/license/OFENet)
 OFENet is a feature extractor network for low-dimensional data to improve performance of Reinforcement Learning.
 It can be combined with algorithms such as PPO, DDPG, TD3, and SAC.
 
