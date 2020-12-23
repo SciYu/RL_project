@@ -14,6 +14,7 @@ mini-batch size is 256 instead of 100, which is written in the above paper.
 
 """
 
+
 import numpy as np
 import tensorflow as tf
 import trfl.target_update_ops as target_update

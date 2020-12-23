@@ -1,7 +1,5 @@
 # Our Model
-We propose a feature extractor network for low-dimensional data to improve performance of Reinforcement Learning.
-
-It can be combined with several off-policy algorithms such as SAC, TD3 and DDPG. Original code is available from http://www.merl.com/research/license/OFENet.
+We propose a feature extractor network for low-dimensional data to improve performance of Reinforcement Learning. It can be combined with several off-policy algorithms such as SAC, TD3 and DDPG. Original code is available from http://www.merl.com/research/license/OFENet.
 
 This repository contains the model implementation, RL algorithms, and hyperparameters.
 
@@ -88,12 +86,6 @@ $ python3 teflon/tool/eager_main_try.py --policy SAC \
 
 ## results
 
-<<<<<<< HEAD
 `eager_main_try.py` generates a corresponding txt document.
 You can watch the result of an experiment.
-=======
-`eager_main_try.py` generates a log file under "log" directory. 
-You can watch the result of an experiment.
-
->>>>>>> 3357295f7e7dac2b8552b116fb48aff1d096c17c
 

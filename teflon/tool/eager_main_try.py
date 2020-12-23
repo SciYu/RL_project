@@ -4,7 +4,6 @@
 
 # As more fully described in the license agreement that was required in order to download this software, documentation and/or data, permission to use, copy and modify this software without fee is granted, but only for educational, research and non-commercial purposes.
 
-#coding=utf-8
 
 import argparse
 import logging

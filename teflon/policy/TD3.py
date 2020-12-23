@@ -14,6 +14,7 @@ batch size is 256 instead of 100, which is written in the above paper.
 
 """
 
+
 import gin
 import numpy as np
 import tensorflow as tf
