@@ -42,7 +42,7 @@ $ python3 teflon/tool/eager_main_try.py --policy SAC \
                                   --indexk 0.7
 ```
 
-If you want to combine OFENet with TD3 or DDPG, change the policy like
+If you want to combine our method with TD3 or DDPG, change the policy like
 
 ```bash
 $ export PYTHONPATH=.
