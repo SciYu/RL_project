@@ -75,15 +75,6 @@ $ python3 teflon/tool/eager_main_try.py --policy SAC \
                                   --seed 0
 ```
 
-ML-SAC is trained with the below command.
-
-```bash
-$ python3 teflon/tool/eager_main_try.py --policy SAC \
-                                  --env HalfCheetah-v2 \
-                                  --gin ./gins/Munk.gin \
-                                  --seed 0
-```
-
 ## results
 
 `eager_main_try.py` generates a corresponding txt document.
