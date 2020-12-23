@@ -5,12 +5,13 @@
 # As more fully described in the license agreement that was required in order to download this software, documentation and/or data, permission to use, copy and modify this software without fee is granted, but only for educational, research and non-commercial purposes.
 
 import tensorflow as tf
+import numpy as np
 
 layers = tf.keras.layers
 
 
 class MLPBlock(tf.keras.Model):
-    def __init__(self, units, activation, kernel_initializer="glorot_uniform", batchnorm=False, trainable=True,
+    def __init__(self, units, activation, index_k=0, wta = 0, kernel_initializer="glorot_uniform", batchnorm=False, trainable=True,
                  name="mlpblock"):
         super().__init__(name=name)
 
@@ -18,7 +19,8 @@ class MLPBlock(tf.keras.Model):
         self.fc = layers.Dense(units,
                                kernel_initializer=kernel_initializer,
                                trainable=trainable, name="fc")
-
+        self.wta = wta
+        self.index_k = index_k
         self.batchnorm = batchnorm
         if self.batchnorm:
             self.normalizer = layers.BatchNormalization()
@@ -34,7 +36,7 @@ class MLPBlock(tf.keras.Model):
 
 
 class ResnetBlock(tf.keras.Model):
-    def __init__(self, units1, units2, activation, kernel_initializer="glorot_uniform", batchnorm=False, trainable=True,
+    def __init__(self, units1, units2, activation, index_k=0, wta = 0, kernel_initializer="glorot_uniform", batchnorm=False, trainable=True,
                  name="resblock"):
         super().__init__(name=name)
 
@@ -47,6 +49,8 @@ class ResnetBlock(tf.keras.Model):
                                 kernel_initializer=kernel_initializer,
                                 trainable=trainable, name="fc2")
 
+        self.wta = wta
+        self.index_k = index_k
         self.batchnorm = batchnorm
         if self.batchnorm:
             self.normalizer1 = layers.BatchNormalization()
@@ -80,9 +84,8 @@ class ResnetBlock(tf.keras.Model):
 
         return features
 
-
 class DensenetBlock(tf.keras.Model):
-    def __init__(self, units, activation, kernel_initializer="glorot_uniform", batchnorm=False, trainable=True,
+    def __init__(self, units, activation,index_k=0,wta = 0,finalnode=0, kernel_initializer="glorot_uniform", batchnorm=False, trainable=True,
                  name="denseblock"):
         super().__init__(name=name)
 
@@ -91,12 +94,15 @@ class DensenetBlock(tf.keras.Model):
                                kernel_initializer=kernel_initializer,
                                trainable=trainable, name="fc")
 
+        self.wta = wta
+        self.index_k = index_k
+        self.finalnode = finalnode
         self.batchnorm = batchnorm
         if batchnorm:
             self.normalizer = layers.BatchNormalization()
-
     def call(self, inputs, training):
         identity_map = inputs
+        inputs = inputs
 
         features = self.fc(inputs)
 
@@ -106,5 +112,85 @@ class DensenetBlock(tf.keras.Model):
         features = self.act(features)
 
         features = tf.concat([features, identity_map], axis=1)
-
+        # print(features)
+        length = features.shape[1]
+        # print(self.finalnode)
+        # print(self.wta)
+        if self.wta and (self.finalnode < length):
+            features = self.wtafunc(features)
+        # print(features)
         return features
+
+
+    def wtafunc(self,inputs):
+        # print(inputs)
+        length = inputs.shape[1]
+        index_k = max(round(length*self.index_k),10)
+        # print(index_k)
+        top_k = tf.nn.top_k(inputs,k=index_k,sorted=True)
+        top_k_value = tf.expand_dims(top_k.values[:, index_k-1], 1)
+        y = tf.nn.relu(tf.where(inputs<top_k_value, tf.cast(0,dtype=np.float32), inputs))
+        # print(y)
+        # y = tf.nn.relu(tf.cast(inputs, dtype=tf.float32)-
+        #                 tf.cast(tf.expand_dims(top_k.values[:,index_k-1],1),
+        #                 dtype=tf.float32))
+        return y
+
+
+class DensenetBlockaddfc(tf.keras.Model):
+    def __init__(self, units, activation,index_k=0,wta = 0,finalnode=0, kernel_initializer="glorot_uniform", batchnorm=False, trainable=True,
+                 name="denseblockaddfc"):
+        super().__init__(name=name)
+
+        self.act = activation
+        self.fc = layers.Dense(units,
+                               kernel_initializer=kernel_initializer,
+                               trainable=trainable, name="fc")
+
+        self.wta = wta
+        self.index_k = index_k
+        self.finalnode = finalnode
+        self.batchnorm = batchnorm
+        if batchnorm:
+            self.normalizer = layers.BatchNormalization()
+    
+        self.fc1 = layers.Dense(units+30,
+                               kernel_initializer=kernel_initializer,
+                               trainable=trainable, name="fc")
+
+    def call(self, inputs, training):
+        identity_map = inputs
+        inputs = inputs
+
+        features = self.fc(inputs)
+
+        if self.batchnorm:
+            features = self.normalizer(features, training=training)
+
+        features = self.act(features)
+
+        features = tf.concat([features, identity_map], axis=1)
+        # print(features)
+        length = features.shape[1]
+        # print(self.finalnode)
+        # print(self.wta)
+        if self.wta and (self.finalnode < length):
+            features = self.wtafunc(features)
+            features = self.fc1(features)
+        # print(features)
+        return features
+
+
+    def wtafunc(self,inputs):
+        # print(inputs)
+        length = inputs.shape[1]
+        index_k = max(round(length*self.index_k),10)
+        # print(index_k)
+        top_k = tf.nn.top_k(inputs,k=index_k,sorted=True)
+        top_k_value = tf.expand_dims(top_k.values[:, index_k-1], 1)
+        y = tf.nn.relu(tf.where(inputs<top_k_value, tf.cast(0,dtype=np.float32), inputs))
+        # print(y)
+        # y = tf.nn.relu(tf.cast(inputs, dtype=tf.float32)-
+        #                 tf.cast(tf.expand_dims(top_k.values[:,index_k-1],1),
+        #                 dtype=tf.float32))
+        return y

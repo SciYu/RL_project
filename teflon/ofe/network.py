@@ -10,7 +10,7 @@ import gin
 import numpy as np
 import tensorflow as tf
 
-from teflon.ofe.blocks import ResnetBlock, DensenetBlock, MLPBlock
+from teflon.ofe.blocks import ResnetBlock, DensenetBlock, MLPBlock, DensenetBlockaddfc
 
 layers = tf.keras.layers
 
@@ -18,7 +18,8 @@ layers = tf.keras.layers
 @gin.configurable
 class OFENet(tf.keras.Model):
     def __init__(self, dim_state, dim_action, dim_output, total_units,
-                 num_layers, batchnorm, activation=tf.nn.relu, block="normal",
+                 num_layers, batchnorm, activation=tf.nn.relu,
+                 index_k=0, wta = 0,finalnode=0, block="normal",
                  kernel_initializer="glorot_uniform",
                  trainable=True, name='FeatureNet',
                  gpu=0, skip_action_branch=False):
@@ -33,13 +34,15 @@ class OFENet(tf.keras.Model):
                                                datefmt="%m/%d %I:%M:%S"))
         logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
-
+        print(1)
         state_layer_units, action_layer_units = calculate_layer_units(dim_state, dim_action, block, total_units,
                                                                       num_layers)
         self.act = activation
         self.batchnorm = batchnorm
-
-        if block not in ["resnet", "densenet", "normal"]:
+        self.wta = wta
+        self.index_k = index_k
+        self.finalnode =finalnode
+        if block not in ["resnet", "densenet", "normal", "densenetaddfc"]:
             raise ValueError("invalid connect : {}".format(block))
 
         state_blocks = []
@@ -55,6 +58,8 @@ class OFENet(tf.keras.Model):
                                         activation=self.act,
                                         kernel_initializer=kernel_initializer,
                                         batchnorm=batchnorm,
+                                        wta = self.wta,
+                                        index_k = self.index_k ,
                                         trainable=trainable)
                 state_blocks.append(cur_block)
 
@@ -63,11 +68,15 @@ class OFENet(tf.keras.Model):
                                         activation=self.act,
                                         kernel_initializer=kernel_initializer,
                                         batchnorm=batchnorm,
+                                        wta = self.wta, 
+                                        index_k = self.index_k ,
                                         trainable=trainable)
                 action_blocks.append(cur_block)
         else:
             if block == "densenet":
                 block_class = DensenetBlock
+            elif block == "densenetaddfc":
+                block_class = DensenetBlockaddfc
             elif block == "normal":
                 block_class = MLPBlock
             else:
@@ -77,6 +86,8 @@ class OFENet(tf.keras.Model):
                 cur_block = block_class(units=cur_layer_units, activation=self.act,
                                         kernel_initializer=kernel_initializer,
                                         batchnorm=batchnorm, trainable=trainable,
+                                        finalnode = self.finalnode,
+                                        wta = self.wta, index_k = self.index_k ,
                                         name="state{}".format(idx_layer))
                 state_blocks.append(cur_block)
 
@@ -84,6 +95,8 @@ class OFENet(tf.keras.Model):
                 cur_block = block_class(units=cur_layer_units, activation=self.act,
                                         kernel_initializer=kernel_initializer,
                                         batchnorm=batchnorm, trainable=trainable,
+                                        finalnode = self.finalnode,
+                                        wta = self.wta, index_k = self.index_k ,
                                         name="action{}".format(idx_layer))
                 action_blocks.append(cur_block)
 
@@ -172,7 +185,12 @@ class OFENet(tf.keras.Model):
 def calculate_layer_units(state_dim, action_dim, ofe_block, total_units, num_layers):
     assert total_units % num_layers == 0
 
-    if ofe_block == "densenet":
+    if ofe_block == "densenet" :
+        per_unit = total_units // num_layers
+        state_layer_units = [per_unit] * num_layers
+        action_layer_units = [per_unit] * num_layers
+
+    elif ofe_block == "densenetaddfc" :
         per_unit = total_units // num_layers
         state_layer_units = [per_unit] * num_layers
         action_layer_units = [per_unit] * num_layers

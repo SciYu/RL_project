@@ -1,8 +1,8 @@
-# OFENet Model
-OFENet is a feature extractor network for low-dimensional data to improve performance of Reinforcement Learning.
-It can be combined with algorithms such as PPO, DDPG, TD3, and SAC. (ref: http://www.merl.com/research/license/OFENet)
+# Our Model
+We propose a feature extractor network for low-dimensional data to improve performance of Reinforcement Learning.
+It can be combined with several off-policy algorithms such as SAC, TD3 and DDPG. Original code is available from http://www.merl.com/research/license/OFENet.
 
-This repository contains OFENet implementation, RL algorithms, and hyperparameters.
+This repository contains the model implementation, RL algorithms, and hyperparameters.
 
 ## Requirement
 
@@ -29,40 +29,49 @@ $ pip install mujoco_py
 
 ## Examples
 
-To train an agent with OFENet, run the below commands at the project root.
+To train an agent with our method, run the below commands at the project root.
 
 ```bash
 $ export PYTHONPATH=.
-$ python3 teflon/tool/eager_main.py --policy SAC \
+$ python3 teflon/tool/eager_main_try.py --policy SAC \
                                   --env HalfCheetah-v2 \
                                   --gin ./gins/HalfCheetah.gin \
-                                  --seed 0
+                                  --seed 0\
+                                  --wta 1\
+                                  --finalnode 350\
+                                  --indexk 0.7
 ```
 
-If you want to combine OFENet with TD3 or DDPG, change the policy like
+If you want to combine our method with TD3 or DDPG, change the policy like
 
 ```bash
 $ export PYTHONPATH=.
-$ python3 teflon/tool/eager_main.py --policy TD3 \
+$ python3 teflon/tool/eager_main_try.py --policy TD3 \
                                   --env HalfCheetah-v2 \
                                   --gin ./gins/HalfCheetah.gin \
-                                  --seed 0
+                                  --seed 0\
+                                  --wta 1\
+                                  --finalnode 350\
+                                  --indexk 0.7
 ```
 
 When you want to run an agent in another environment, change the policy and 
 the hyperparameter file (.gin).
 
 ```bash
-$ python3 teflon/tool/eager_main.py --policy SAC \
+$ python3 teflon/tool/eager_main_try.py --policy SAC \
                                   --env Walker2d-v2  \
                                   --gin ./gins/Walker2d.gin \
-                                  --seed 0
+                                  --seed 0\
+                                  --wta 1\
+                                  --finalnode 350\
+                                  --indexk 0.7
 ```
 
 When you don't specify a gin file, you train an agent with raw observations. 
 
 ```bash
-$ python3 teflon/tool/eager_main.py --policy SAC \
+$ python3 teflon/tool/eager_main_try.py --policy SAC \
                                   --env HalfCheetah-v2 \
                                   --seed 0
 ```
@@ -70,18 +79,14 @@ $ python3 teflon/tool/eager_main.py --policy SAC \
 ML-SAC is trained with the below command.
 
 ```bash
-$ python3 teflon/tool/eager_main.py --policy SAC \
+$ python3 teflon/tool/eager_main_try.py --policy SAC \
                                   --env HalfCheetah-v2 \
                                   --gin ./gins/Munk.gin \
                                   --seed 0
 ```
 
-## Retrieve results
+## results
 
-`eager_main.py` generates a log file under "log" directory. 
-You can watch the result of an experiment with tensorboard.
-
-```bash
-$ tensorboard --logdir ./log
-```
+`eager_main_try.py` generates a corresponding txt document.
+You can watch the result of an experiment.
 
